@@ -1,6 +1,21 @@
 
 import numpy as np
 
+
+def predict_surrogate(X, W1, b1, W2, b2, X_mean, X_std):
+    """Predict diffusion width from physical parameters."""
+
+    # Normalize inputs
+    X_scaled = (X - X_mean) / X_std
+
+    # Forward propagation
+    hidden = np.tanh(X_scaled @ W1 + b1)
+
+    predictions = hidden @ W2 + b2
+
+    return predictions.reshape(-1)
+
+
 rng = np.random.default_rng(42)
 
 # Generate simulation parameters
@@ -243,3 +258,32 @@ plt.savefig("surrogate_error_map.png", dpi=150)
 plt.close()
 
 print("Saved surrogate_error_map.png")
+
+
+# Verify reusable prediction function
+sample_inputs = np.array([
+    [0.05, 1.0],
+    [0.10, 2.0],
+    [0.15, 3.0],
+])
+
+sample_predictions = predict_surrogate(
+    sample_inputs,
+    W1,
+    b1,
+    W2,
+    b2,
+    X_mean,
+    X_std,
+)
+
+print("\nReusable prediction function:")
+for inputs, prediction in zip(
+    sample_inputs,
+    sample_predictions,
+):
+    print(
+        f"alpha={inputs[0]:.2f}, "
+        f"time={inputs[1]:.2f}, "
+        f"prediction={prediction:.4f}"
+    )
